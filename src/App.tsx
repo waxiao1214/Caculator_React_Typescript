@@ -17,9 +17,9 @@ const StyledApp = styled.div`
 
 export const App: FunctionComponent = () => {
   // Calculator's states
-  const [end, setEnd] = useState<boolean>(true)
+  const [end, setEnd] = useState<boolean>(false)
   const [pendingOperator, setPendingOperator] = useState<Operator>()
-  const [display, setDisplay] = useState<string>('0')
+  const [display, setDisplay] = useState<string>('')
   const [expression, setExpression] = useState<string>("")
 
   const init = (display:string) => {
@@ -52,7 +52,7 @@ export const App: FunctionComponent = () => {
   })
 
   const onOperatorButtonClick = ((operator: Operator) => {
-    if((operator === "(" || operator === ")") && !end) {
+    if((operator === "(" || operator === ")")) {
       if(pendingOperator) {
         setExpression(expression + operator)
       } else {
@@ -62,7 +62,11 @@ export const App: FunctionComponent = () => {
       return
     }
     if(pendingOperator !== undefined && operator !== pendingOperator) {
-      setExpression(expression.slice(0, -1) + operator)
+      if(expression.slice(-1) === "(" || expression.slice(-1) === ")") {
+        setExpression(expression + operator)
+      } else {
+        setExpression(expression.slice(0, -1) + operator)
+      }
     } else if (operator === pendingOperator) {
       setExpression(expression)
     } else {
@@ -76,19 +80,27 @@ export const App: FunctionComponent = () => {
   })
 
   const onEqualButtonClick = () => {
+    let resString:string = ''
     if(!end) {
       if(pendingOperator) {
-        setExpression(expression + "=")
-      } else {
+        if((expression.slice(-1) == "(" || expression.slice(-1) == ")" )) {
+          setExpression(expression + "=")
+          resString = expression
+        } else {
+          setExpression(expression.slice(0, -1) + "=")
+          resString = expression.slice(0, -1)
+        }
+
+      } else if (!pendingOperator) {
         setExpression(expression + display + "=")
+        resString = expression + display;
       }
-      let resString = expression + display;
       let result = caculate(resString)
       if(result) {
         setDisplay(result)
       } else {
         setExpression('')
-        setDisplay("Valid Expression")
+        setDisplay('0')
       }
       setEnd(true)
     }
@@ -106,14 +118,7 @@ export const App: FunctionComponent = () => {
         onPointButtonClick={onPointButtonClick}
         onOperatorButtonClick={onOperatorButtonClick}
         onInit={onInit}
-        // onChangeSignButtonClick={onChangeSignButtonClick}
         onEqualButtonClick={onEqualButtonClick}
-        // onAllClearButtonClick={onAllClearButtonClick}
-        // onClearEntryButtonClick={onClearEntryButtonClick}
-        // onMemoryRecallButtonClick={onMemoryRecallButtonClick}
-        // onMemoryClearButtonClick={onMemoryClearButtonClick}
-        // onMemoryPlusButtonClick={onMemoryPlusButtonClick}
-        // onMemoryMinusButtonClick={onMemoryMinusButtonClick}
       />
     </StyledApp>
   )
